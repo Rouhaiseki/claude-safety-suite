@@ -1,0 +1,71 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  patterns:
+    name: Pattern regression (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run pattern regression
+        run: python3 tests/test_patterns.py
+
+      - name: Sanity-check JSON manifests
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          for name, required in [
+              (".claude-plugin/marketplace.json", {"name", "plugins"}),
+              ("envshield/.claude-plugin/plugin.json", {"name", "description", "version"}),
+              ("nonuke/.claude-plugin/plugin.json", {"name", "description", "version"}),
+              ("envshield/hooks/hooks.json", {"hooks"}),
+              ("nonuke/hooks/hooks.json", {"hooks"}),
+              ("envshield/config/default-patterns.json", {"version"}),
+              ("nonuke/config/destructive-patterns.json", {"version", "patterns"}),
+          ]:
+              data = json.loads(Path(name).read_text())
+              missing = required - set(data)
+              if missing:
+                  print(f"{name}: missing keys {missing}")
+                  sys.exit(1)
+              print(f"OK  {name}")
+          PY
+
+      - name: Smoke-test hook executables (real stdin → stdout)
+        run: |
+          # EnvShield should deny .env reads
+          echo '{"tool_name":"Read","tool_input":{"file_path":"/x/.env"}}' \
+            | python3 envshield/hooks/pre-tool-use.py \
+            | python3 -c "import sys, json; d=json.loads(sys.stdin.read()); assert d['hookSpecificOutput']['permissionDecision']=='deny', d; print('EnvShield deny OK')"
+
+          # NoNuke should deny rm -rf
+          echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf foo"}}' \
+            | python3 nonuke/hooks/pre-tool-use.py \
+            | python3 -c "import sys, json; d=json.loads(sys.stdin.read()); assert d['hookSpecificOutput']['permissionDecision']=='deny', d; print('NoNuke deny OK')"
+
+          # EnvShield should allow innocent reads (no stdout)
+          OUT=$(echo '{"tool_name":"Read","tool_input":{"file_path":"/x/README.md"}}' \
+            | python3 envshield/hooks/pre-tool-use.py)
+          if [ -n "$OUT" ]; then
+            echo "EnvShield wrongly blocked README.md: $OUT"
+            exit 1
+          fi
+          echo "EnvShield allow OK"

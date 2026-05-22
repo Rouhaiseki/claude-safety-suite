@@ -1,5 +1,9 @@
 # Claude Safety Suite
 
+[![Tests](https://github.com/Rouhaiseki/claude-safety-suite/actions/workflows/test.yml/badge.svg)](https://github.com/Rouhaiseki/claude-safety-suite/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Plugin: Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-orange)](https://code.claude.com)
+
 Two PreToolUse guardrails for [Claude Code](https://code.claude.com):
 
 - **EnvShield** — blocks reads of `.env`, SSH keys, AWS credentials, `.npmrc`, and ~15 other secret files. Also blocks bash workarounds (`printenv`, `docker compose config`, `cat .env`, …) that would dump secrets via stdout.
