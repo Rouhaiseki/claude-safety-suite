@@ -1,7 +1,7 @@
 {
   "name": "nonuke",
   "description": "Stops Claude Code from running destructive commands without explicit confirmation: rm -rf, prisma migrate reset, DROP TABLE, git push --force, kubectl delete, terraform destroy, and ~60 more patterns. Every block writes an audit-log line.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Claude Safety Suite"
   },

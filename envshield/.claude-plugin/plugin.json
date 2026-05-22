@@ -1,7 +1,7 @@
 {
   "name": "envshield",
   "description": "Stops Claude Code from reading your .env files, SSH keys, AWS credentials, and other secret material — even via clever bash workarounds like printenv or docker compose config. Every block writes an audit-log line so you can review what was attempted.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Claude Safety Suite"
   },

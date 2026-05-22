@@ -28,7 +28,7 @@
     {"regex": "\\.env\\.test$"}
   ],
   "dangerous_bash_patterns": [
-    {"regex": "(^|\\s|;|\\|)printenv(\\s|$)", "reason": "`printenv` dumps every env var (including secrets)"},
+    {"regex": "(^|\\s|;|\\|)printenv(\\s*$|\\s*[|;&><])", "reason": "`printenv` (no args) dumps every env var, including secrets"},
     {"regex": "(^|\\s|;|\\|)env(\\s*$|\\s*[|;&])", "reason": "`env` with no args dumps every env var"},
     {"regex": "(^|\\s|;|\\|)set(\\s*$|\\s*[|;&])", "reason": "bash `set` (no args) dumps every variable"},
     {"regex": "docker(-|\\s)compose\\s+config", "reason": "`docker compose config` resolves all .env values into stdout"},
@@ -39,7 +39,35 @@
     {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*\\.netrc(\\s|$|[|;&])", "reason": "reads .netrc"},
     {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*\\.npmrc(\\s|$|[|;&])", "reason": "reads .npmrc"},
     {"regex": "echo\\s+\\$\\{?[A-Z][A-Z0-9_]*(TOKEN|KEY|SECRET|PASSWORD|PASS|PWD|API_KEY)\\}?", "reason": "echoes a likely-secret env var"},
-    {"regex": "git\\s+config\\s+(--global\\s+)?--get\\s+credential", "reason": "reads git credential helper"}
+    {"regex": "git\\s+config\\s+(--global\\s+)?--get\\s+credential", "reason": "reads git credential helper"},
+
+    {"regex": "\\$\\([^)]*\\.env[^)]*\\)", "reason": "subshell `$(...)` that references .env"},
+    {"regex": "`[^`]*\\.env[^`]*`", "reason": "backtick subshell that references .env"},
+    {"regex": "(python|python3|node|ruby|perl|php|deno|bun)\\s+(-e|-c)\\b[^|;&]*\\.env", "reason": "language one-liner that references .env"},
+    {"regex": "(python|python3|node|ruby|perl|php|deno|bun)\\s+(-e|-c)\\b[^|;&]*(id_rsa|id_ed25519|\\.pem|aws/credentials|\\.npmrc)", "reason": "language one-liner that references a secret file"},
+
+    {"regex": "aws\\s+secretsmanager\\s+get-secret-value", "reason": "AWS Secrets Manager get-secret-value"},
+    {"regex": "aws\\s+ssm\\s+get-parameter[s]?\\b.*--with-decryption", "reason": "AWS SSM get-parameter --with-decryption"},
+    {"regex": "gcloud\\s+secrets\\s+versions\\s+access", "reason": "GCP Secret Manager versions access"},
+    {"regex": "(^|[\\s;|&])vault\\s+(read|kv\\s+get)\\s+", "reason": "HashiCorp Vault read"},
+    {"regex": "az\\s+keyvault\\s+secret\\s+show", "reason": "Azure Key Vault secret show"},
+    {"regex": "doppler\\s+secrets\\s+(get|download)", "reason": "Doppler secrets get/download"},
+    {"regex": "(^|[\\s;|&])op\\s+(read|item\\s+get|document\\s+get)\\s+", "reason": "1Password CLI secret retrieval"},
+    {"regex": "(^|[\\s;|&])bw\\s+get\\s+(password|item)", "reason": "Bitwarden CLI secret retrieval"},
+    {"regex": "infisical\\s+secrets\\s+(get|export)", "reason": "Infisical secrets retrieval"},
+
+    {"regex": "(scp|rsync|sftp)\\s+[^|;&]*\\.env(\\s|$|[|;&])", "reason": "exfiltrates a .env file via scp/rsync/sftp"},
+    {"regex": "(scp|rsync|sftp)\\s+[^|;&]*(id_rsa|id_ed25519|\\.pem|aws/credentials)(\\s|$|[|;&])", "reason": "exfiltrates a secret file via scp/rsync/sftp"},
+    {"regex": "curl\\s+[^|;&]*(-F\\s+\\S*=@|--data-binary\\s+@|--upload-file\\s+|-T\\s+)[^|;&\\s]*\\.env", "reason": "uploads .env via curl"},
+    {"regex": "curl\\s+[^|;&]*(-F\\s+\\S*=@|--data-binary\\s+@|--upload-file\\s+|-T\\s+)[^|;&\\s]*(id_rsa|id_ed25519|\\.pem|aws/credentials)", "reason": "uploads a secret file via curl"},
+    {"regex": "wget\\s+[^|;&]*--post-file[= ]?[^|;&\\s]*\\.env", "reason": "uploads .env via wget --post-file"},
+    {"regex": "(base64|gzip|bzip2|xz|tar|zip)\\s+[^|;&]*\\.env(\\s|$|[|;&])", "reason": "encodes/archives a .env file (likely staging for exfiltration)"},
+    {"regex": "(^|[\\s;|&])cp\\s+[^|;&]*\\.env\\s+[^|;&]*(/tmp/|/var/tmp/|/dev/shm/)", "reason": "copies .env to a world-readable temp location"},
+
+    {"regex": "(awk|sed|tr|jq|yq)\\s+[^|;&]*\\.env(\\s|$|[|;&])", "reason": "processes a .env file (likely to read secrets)"},
+    {"regex": "(awk|sed|tr)\\s+[^|;&]*(id_rsa|id_ed25519|\\.pem|aws/credentials|\\.npmrc)(\\s|$|[|;&])", "reason": "processes a secret file"},
+
+    {"regex": "printenv\\s+[A-Z][A-Z0-9_]*(TOKEN|KEY|SECRET|PASSWORD|PASS|PWD|API_KEY)", "reason": "prints a likely-secret env var by name"}
   ],
   "secret_env_var_patterns": [
     "^[A-Z][A-Z0-9_]*_TOKEN$",

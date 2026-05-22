@@ -6,6 +6,9 @@
     {"regex": "(^|[\\s;|&])rm\\s+[^|;&]*\\s+/(\\s|$)", "reason": "rm targeting / (root directory)", "severity": "high"},
     {"regex": "(^|[\\s;|&])find\\s+[^|;&]+-delete(\\s|$)", "reason": "find … -delete (mass delete)", "severity": "medium"},
     {"regex": "(^|[\\s;|&])find\\s+[^|;&]+-exec\\s+rm\\s+", "reason": "find … -exec rm (mass delete)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])rm\\s+[^|;&]*\\$\\(", "reason": "rm with $(...) subshell args — target is hidden", "severity": "high"},
+    {"regex": "(^|[\\s;|&])rm\\s+[^|;&]*`[^`]*`", "reason": "rm with backtick subshell args — target is hidden", "severity": "high"},
+    {"regex": "(^|[\\s;|&])xargs\\s+rm\\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)", "reason": "xargs rm -rf (mass delete)", "severity": "high"},
 
     {"regex": "(^|[\\s;|&])git\\s+push\\s+([^|;&]*\\s)?(-f|--force(?!-with-lease))", "reason": "git push --force (overwrites remote history; --force-with-lease is safer)", "severity": "high"},
     {"regex": "(^|[\\s;|&])git\\s+reset\\s+--hard", "reason": "git reset --hard (discards uncommitted changes)", "severity": "high"},
@@ -19,10 +22,14 @@
     {"regex": "(^|[\\s;|&])git\\s+rebase\\s+.*\\s-i\\s", "reason": "interactive rebase (history rewrite)", "severity": "medium"},
     {"regex": "(^|[\\s;|&])git\\s+filter-branch", "reason": "git filter-branch (history rewrite)", "severity": "high"},
     {"regex": "(^|[\\s;|&])git\\s+update-ref\\s+-d", "reason": "git update-ref -d (delete ref)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+push\\s+([^|;&]*\\s)?(--delete\\s+|:[A-Za-z0-9_./-]+(\\s|$))", "reason": "git push :branch / --delete (deletes a remote branch)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+(remote\\s+remove|remote\\s+rm)\\s+", "reason": "git remote remove (disconnects from origin)", "severity": "low"},
+    {"regex": "(^|[\\s;|&])git\\s+worktree\\s+remove\\s+(-f|--force)", "reason": "git worktree remove --force", "severity": "medium"},
 
     {"regex": "(?i)DROP\\s+(TABLE|DATABASE|SCHEMA|INDEX|VIEW)\\s", "reason": "SQL DROP statement", "severity": "high"},
     {"regex": "(?i)TRUNCATE\\s+TABLE", "reason": "SQL TRUNCATE TABLE", "severity": "high"},
-    {"regex": "(?i)DELETE\\s+FROM\\s+[^;]+(;|$)(?![^;]*WHERE)", "reason": "DELETE FROM without WHERE clause", "severity": "high"},
+    {"regex": "(?i)DELETE\\s+FROM\\s+(?:(?!WHERE)[^;])*(?:;|$)", "reason": "DELETE FROM without WHERE clause (deletes every row)", "severity": "high"},
+    {"regex": "(?i)UPDATE\\s+\\w+\\s+SET\\s+(?:(?!WHERE)[^;])*(?:;|$)", "reason": "UPDATE without WHERE clause (touches every row)", "severity": "high"},
 
     {"regex": "(^|[\\s;|&])prisma\\s+migrate\\s+reset", "reason": "prisma migrate reset (drops dev DB)", "severity": "high"},
     {"regex": "(^|[\\s;|&])prisma\\s+db\\s+push\\s+.*--accept-data-loss", "reason": "prisma db push --accept-data-loss", "severity": "high"},
@@ -36,6 +43,10 @@
     {"regex": "(^|[\\s;|&])docker\\s+volume\\s+(rm|prune)", "reason": "docker volume rm / prune (data loss)", "severity": "high"},
     {"regex": "(^|[\\s;|&])docker(-|\\s)compose\\s+down\\s+.*(-v|--volumes)", "reason": "docker compose down -v (removes named volumes)", "severity": "high"},
     {"regex": "(^|[\\s;|&])docker\\s+rm\\s+(-f|--force)", "reason": "docker rm -f (kills running container)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])podman\\s+system\\s+prune\\s+.*(-a|--all|--volumes)", "reason": "podman system prune -a / --volumes (deletes images/volumes)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])podman\\s+volume\\s+(rm|prune)", "reason": "podman volume rm / prune (data loss)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])podman\\s+rm\\s+(-f|--force)", "reason": "podman rm -f (kills running container)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])buildah\\s+rm\\b", "reason": "buildah rm (deletes a working container)", "severity": "medium"},
 
     {"regex": "(^|[\\s;|&])kubectl\\s+delete\\s+(namespace|ns|pvc|pv|crd|all)", "reason": "kubectl delete on namespace/pvc/pv/crd/all", "severity": "high"},
     {"regex": "(^|[\\s;|&])kubectl\\s+drain\\s+", "reason": "kubectl drain (evicts all pods on a node)", "severity": "high"},
