@@ -1,9 +1,8 @@
 {
   "version": 1,
   "secret_file_patterns": [
-    {"regex": "(^|/)\\.env(\\.|$)", "reason": ".env file (likely contains secrets)"},
-    {"regex": "(^|/)\\.env$", "reason": ".env file (likely contains secrets)"},
-    {"regex": "(^|/)\\.envrc$", "reason": "direnv .envrc (often holds tokens)"},
+    {"regex": "(^|/|\\*)\\.env(\\.|$|\\*|\\?|\\[)", "reason": ".env file or .env-matching glob"},
+    {"regex": "(^|/)\\.envrc(\\*|\\?|\\[)?$", "reason": "direnv .envrc (often holds tokens)"},
     {"regex": "(^|/)id_(rsa|ed25519|ecdsa|dsa)(\\.pub)?$", "reason": "SSH private key"},
     {"regex": "\\.(pem|p12|pfx)$", "reason": "TLS certificate or private key"},
     {"regex": "(^|/)\\.aws/credentials$", "reason": "AWS credentials file"},
@@ -69,17 +68,5 @@
 
     {"regex": "printenv\\s+[A-Z][A-Z0-9_]*(TOKEN|KEY|SECRET|PASSWORD|PASS|PWD|API_KEY)", "reason": "prints a likely-secret env var by name"}
   ],
-  "secret_env_var_patterns": [
-    "^[A-Z][A-Z0-9_]*_TOKEN$",
-    "^[A-Z][A-Z0-9_]*_SECRET$",
-    "^[A-Z][A-Z0-9_]*_KEY$",
-    "^[A-Z][A-Z0-9_]*_API_KEY$",
-    "^[A-Z][A-Z0-9_]*_PASSWORD$",
-    "^STRIPE_",
-    "^GITHUB_TOKEN$",
-    "^GH_TOKEN$",
-    "^AWS_SECRET_ACCESS_KEY$",
-    "^ANTHROPIC_API_KEY$",
-    "^OPENAI_API_KEY$"
-  ]
+  "_comment_removed": "secret_env_var_patterns was unused dead config in v0.1.1; the printenv VAR_TOKEN pattern in dangerous_bash_patterns covers the use case directly."
 }

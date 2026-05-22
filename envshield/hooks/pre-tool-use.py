@@ -28,7 +28,7 @@ USER_CONFIG_PATH = Path.home() / ".claude" / "envshield" / "patterns.json"
 AUDIT_DIR = Path.home() / ".claude" / "envshield"
 AUDIT_PATH = AUDIT_DIR / "audit.log"
 
-FILE_TOOLS = {"Read", "Edit", "Write", "Glob", "Grep"}
+FILE_TOOLS = {"Read", "Edit", "MultiEdit", "Write", "NotebookEdit", "Glob", "Grep"}
 
 
 def load_config() -> dict:
@@ -81,8 +81,17 @@ def any_match(pats: list[re.Pattern], text: str) -> bool:
 def write_audit(record: dict) -> None:
     try:
         AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+        # Audit log can contain partial secret paths and matched patterns.
+        # Restrict to owner-only (0600) before first write so it can't be
+        # read by other local users.
+        existed = AUDIT_PATH.exists()
         with AUDIT_PATH.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        if not existed:
+            try:
+                os.chmod(AUDIT_PATH, 0o600)
+            except OSError:
+                pass
     except OSError:
         pass
 

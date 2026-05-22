@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Two guardrails for Claude Code: EnvShield (blocks secret reads + env exfiltration) and NoNuke (blocks destructive commands).",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "plugins": [
     {

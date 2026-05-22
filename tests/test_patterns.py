@@ -125,6 +125,13 @@ def main() -> int:
         ("/home/u/.kube/config",                   "BLOCK"),
         ("/srv/wallet.dat",                        "BLOCK"),
         ("/repo/src/main.go",                      "ALLOW"),
+        # v0.1.2: glob-pattern handling
+        ("**/.env*",                               "BLOCK"),
+        ("**/.env?",                               "BLOCK"),
+        ("./**/.env",                              "BLOCK"),
+        ("**/.env.example",                        "ALLOW"),
+        ("**/*.env",                               "BLOCK"),
+        ("src/**/*.ts",                            "ALLOW"),
     ]
 
     nn_cases: list[tuple[str, str]] = [
@@ -168,6 +175,34 @@ def main() -> int:
         ("kubectl drain node-1",                   "BLOCK"),
         ("terraform destroy",                      "BLOCK"),
         ("terraform apply --auto-approve",         "BLOCK"),
+
+        # v0.1.2: docker compose down -v with -f interleaved
+        ("docker compose -f override.yml down -v",     "BLOCK"),
+        ("docker compose --file prod.yml down --volumes", "BLOCK"),
+        ("docker-compose -f x.yml down -v",            "BLOCK"),
+        ("docker compose up",                          "ALLOW"),
+        # v0.1.2: docker/podman rmi
+        ("docker rmi -f mongo:latest",                 "BLOCK"),
+        ("docker rmi mongo:latest",                    "ALLOW"),
+        ("podman rmi --force img",                     "BLOCK"),
+        ("docker image prune -a",                      "BLOCK"),
+        # v0.1.2: big cloud destroyers
+        ("aws cloudformation delete-stack --stack-name prod",   "BLOCK"),
+        ("aws lambda delete-function --function-name api",      "BLOCK"),
+        ("aws iam delete-role --role-name admin",               "BLOCK"),
+        ("aws iam delete-user --user-name alice",               "BLOCK"),
+        ("aws ecs delete-cluster --cluster prod",               "BLOCK"),
+        ("aws dynamodb delete-table --table-name users",        "BLOCK"),
+        ("aws ec2 terminate-instances --instance-ids i-abc",    "BLOCK"),
+        ("gcloud projects delete my-prod-project",              "BLOCK"),
+        ("gcloud compute instances delete prod-vm",             "BLOCK"),
+        ("gcloud functions delete api",                         "BLOCK"),
+        ("gcloud container clusters delete prod-cluster",       "BLOCK"),
+        ("az group delete --name prod-rg",                      "BLOCK"),
+        ("az vm delete --name prod-vm",                         "BLOCK"),
+        ("aws ec2 describe-instances",                          "ALLOW"),
+        ("gcloud projects list",                                "ALLOW"),
+        ("az group list",                                       "ALLOW"),
 
         # innocent
         ("ls -la",                                 "ALLOW"),

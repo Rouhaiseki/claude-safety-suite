@@ -41,12 +41,15 @@
 
     {"regex": "(^|[\\s;|&])docker\\s+system\\s+prune\\s+.*(-a|--all|--volumes)", "reason": "docker system prune -a / --volumes (deletes images/volumes)", "severity": "high"},
     {"regex": "(^|[\\s;|&])docker\\s+volume\\s+(rm|prune)", "reason": "docker volume rm / prune (data loss)", "severity": "high"},
-    {"regex": "(^|[\\s;|&])docker(-|\\s)compose\\s+down\\s+.*(-v|--volumes)", "reason": "docker compose down -v (removes named volumes)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])docker(-|\\s)compose[^|;&]*\\bdown\\b[^|;&]*(\\s-v\\b|--volumes\\b)", "reason": "docker compose down -v (removes named volumes — even with -f flag interleaved)", "severity": "high"},
     {"regex": "(^|[\\s;|&])docker\\s+rm\\s+(-f|--force)", "reason": "docker rm -f (kills running container)", "severity": "medium"},
     {"regex": "(^|[\\s;|&])podman\\s+system\\s+prune\\s+.*(-a|--all|--volumes)", "reason": "podman system prune -a / --volumes (deletes images/volumes)", "severity": "high"},
     {"regex": "(^|[\\s;|&])podman\\s+volume\\s+(rm|prune)", "reason": "podman volume rm / prune (data loss)", "severity": "high"},
     {"regex": "(^|[\\s;|&])podman\\s+rm\\s+(-f|--force)", "reason": "podman rm -f (kills running container)", "severity": "medium"},
     {"regex": "(^|[\\s;|&])buildah\\s+rm\\b", "reason": "buildah rm (deletes a working container)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])docker\\s+rmi\\s+(-f|--force)", "reason": "docker rmi -f (force-deletes an image)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])podman\\s+rmi\\s+(-f|--force)", "reason": "podman rmi -f (force-deletes an image)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])docker\\s+image\\s+prune\\s+.*(-a|--all)", "reason": "docker image prune -a (deletes all unused images)", "severity": "medium"},
 
     {"regex": "(^|[\\s;|&])kubectl\\s+delete\\s+(namespace|ns|pvc|pv|crd|all)", "reason": "kubectl delete on namespace/pvc/pv/crd/all", "severity": "high"},
     {"regex": "(^|[\\s;|&])kubectl\\s+drain\\s+", "reason": "kubectl drain (evicts all pods on a node)", "severity": "high"},
@@ -61,6 +64,21 @@
     {"regex": "aws\\s+rds\\s+delete-db-instance", "reason": "aws rds delete-db-instance", "severity": "high"},
     {"regex": "gcloud\\s+sql\\s+instances\\s+delete", "reason": "gcloud sql instances delete", "severity": "high"},
     {"regex": "az\\s+sql\\s+(db|server)\\s+delete", "reason": "az sql delete", "severity": "high"},
+
+    {"regex": "aws\\s+cloudformation\\s+delete-stack", "reason": "aws cloudformation delete-stack (tears down a whole stack)", "severity": "high"},
+    {"regex": "aws\\s+lambda\\s+delete-function", "reason": "aws lambda delete-function", "severity": "high"},
+    {"regex": "aws\\s+iam\\s+delete-(role|user|policy|group|access-key)", "reason": "aws iam delete-* (IAM identity removal)", "severity": "high"},
+    {"regex": "aws\\s+ecs\\s+delete-(cluster|service)", "reason": "aws ecs delete-cluster/service", "severity": "high"},
+    {"regex": "aws\\s+dynamodb\\s+delete-table", "reason": "aws dynamodb delete-table", "severity": "high"},
+    {"regex": "aws\\s+ec2\\s+terminate-instances", "reason": "aws ec2 terminate-instances", "severity": "high"},
+
+    {"regex": "gcloud\\s+projects\\s+delete", "reason": "gcloud projects delete (deletes a whole GCP project)", "severity": "high"},
+    {"regex": "gcloud\\s+compute\\s+instances\\s+delete", "reason": "gcloud compute instances delete", "severity": "high"},
+    {"regex": "gcloud\\s+(functions|run|container\\s+clusters)\\s+delete", "reason": "gcloud functions/run/container clusters delete", "severity": "high"},
+
+    {"regex": "az\\s+group\\s+delete", "reason": "az group delete (removes an Azure resource group — everything inside dies)", "severity": "high"},
+    {"regex": "az\\s+vm\\s+delete", "reason": "az vm delete", "severity": "high"},
+    {"regex": "az\\s+functionapp\\s+delete", "reason": "az functionapp delete", "severity": "high"},
 
     {"regex": "(^|[\\s;|&])dd\\s+.*of=/dev/", "reason": "dd writing to /dev/ device (data destruction)", "severity": "high"},
     {"regex": "(^|[\\s;|&])mkfs\\.", "reason": "mkfs (format filesystem)", "severity": "high"},
