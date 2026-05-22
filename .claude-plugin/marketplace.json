@@ -1,0 +1,24 @@
+{
+  "name": "claude-safety-suite",
+  "owner": {
+    "name": "Claude Safety Suite"
+  },
+  "metadata": {
+    "description": "Two guardrails for Claude Code: EnvShield (blocks secret reads + env exfiltration) and NoNuke (blocks destructive commands).",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "envshield",
+      "description": "Stops Claude Code from reading .env files, SSH keys, AWS credentials, and other secret material — and blocks bash workarounds like printenv or docker compose config that would leak them via stdout. Writes a JSON audit log of every block.",
+      "source": "./envshield",
+      "strict": false
+    },
+    {
+      "name": "nonuke",
+      "description": "Blocks ~60 destructive command patterns (rm -rf, prisma migrate reset, DROP TABLE, git push --force, terraform destroy, kubectl delete, …) unless Claude explicitly confirms with the user. Writes an audit log.",
+      "source": "./nonuke",
+      "strict": false
+    }
+  ]
+}

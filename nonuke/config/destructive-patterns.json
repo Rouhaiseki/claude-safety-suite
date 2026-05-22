@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "patterns": [
+    {"regex": "(^|[\\s;|&])rm\\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|--recursive\\s+--force|--force\\s+--recursive)", "reason": "rm -rf / rm -fr (recursive force delete)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])sudo\\s+rm\\s+", "reason": "sudo rm — root-level deletion", "severity": "high"},
+    {"regex": "(^|[\\s;|&])rm\\s+[^|;&]*\\s+/(\\s|$)", "reason": "rm targeting / (root directory)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])find\\s+[^|;&]+-delete(\\s|$)", "reason": "find … -delete (mass delete)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])find\\s+[^|;&]+-exec\\s+rm\\s+", "reason": "find … -exec rm (mass delete)", "severity": "medium"},
+
+    {"regex": "(^|[\\s;|&])git\\s+push\\s+([^|;&]*\\s)?(-f|--force(?!-with-lease))", "reason": "git push --force (overwrites remote history; --force-with-lease is safer)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])git\\s+reset\\s+--hard", "reason": "git reset --hard (discards uncommitted changes)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])git\\s+clean\\s+(-[a-zA-Z]*[fd][a-zA-Z]*|--force)", "reason": "git clean -fd (deletes untracked files)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])git\\s+checkout\\s+\\.(\\s|$)", "reason": "git checkout . (discards uncommitted changes)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+restore\\s+\\.(\\s|$)", "reason": "git restore . (discards uncommitted changes)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+branch\\s+-D\\s", "reason": "git branch -D (force-delete branch)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+stash\\s+drop", "reason": "git stash drop (permanent stash deletion)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+stash\\s+clear", "reason": "git stash clear (removes all stashes)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+tag\\s+-d\\s", "reason": "git tag -d (delete tag)", "severity": "low"},
+    {"regex": "(^|[\\s;|&])git\\s+rebase\\s+.*\\s-i\\s", "reason": "interactive rebase (history rewrite)", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])git\\s+filter-branch", "reason": "git filter-branch (history rewrite)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])git\\s+update-ref\\s+-d", "reason": "git update-ref -d (delete ref)", "severity": "medium"},
+
+    {"regex": "(?i)DROP\\s+(TABLE|DATABASE|SCHEMA|INDEX|VIEW)\\s", "reason": "SQL DROP statement", "severity": "high"},
+    {"regex": "(?i)TRUNCATE\\s+TABLE", "reason": "SQL TRUNCATE TABLE", "severity": "high"},
+    {"regex": "(?i)DELETE\\s+FROM\\s+[^;]+(;|$)(?![^;]*WHERE)", "reason": "DELETE FROM without WHERE clause", "severity": "high"},
+
+    {"regex": "(^|[\\s;|&])prisma\\s+migrate\\s+reset", "reason": "prisma migrate reset (drops dev DB)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])prisma\\s+db\\s+push\\s+.*--accept-data-loss", "reason": "prisma db push --accept-data-loss", "severity": "high"},
+    {"regex": "rails\\s+db:(reset|drop)", "reason": "rails db:reset / db:drop", "severity": "high"},
+    {"regex": "(sequelize|knex)\\s+db:drop", "reason": "sequelize / knex db:drop", "severity": "high"},
+    {"regex": "(alembic|flask db)\\s+downgrade\\s+base", "reason": "alembic downgrade base (full revert)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])dropdb\\s", "reason": "dropdb (Postgres database drop)", "severity": "high"},
+    {"regex": "mongo(sh)?\\s+--eval\\s+['\"][^'\"]*db\\.drop", "reason": "MongoDB db.drop()", "severity": "high"},
+
+    {"regex": "(^|[\\s;|&])docker\\s+system\\s+prune\\s+.*(-a|--all|--volumes)", "reason": "docker system prune -a / --volumes (deletes images/volumes)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])docker\\s+volume\\s+(rm|prune)", "reason": "docker volume rm / prune (data loss)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])docker(-|\\s)compose\\s+down\\s+.*(-v|--volumes)", "reason": "docker compose down -v (removes named volumes)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])docker\\s+rm\\s+(-f|--force)", "reason": "docker rm -f (kills running container)", "severity": "medium"},
+
+    {"regex": "(^|[\\s;|&])kubectl\\s+delete\\s+(namespace|ns|pvc|pv|crd|all)", "reason": "kubectl delete on namespace/pvc/pv/crd/all", "severity": "high"},
+    {"regex": "(^|[\\s;|&])kubectl\\s+drain\\s+", "reason": "kubectl drain (evicts all pods on a node)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])helm\\s+uninstall\\s+", "reason": "helm uninstall (removes release + resources)", "severity": "high"},
+
+    {"regex": "(^|[\\s;|&])terraform\\s+destroy", "reason": "terraform destroy", "severity": "high"},
+    {"regex": "(^|[\\s;|&])terraform\\s+(apply|plan)\\s+.*-auto-approve", "reason": "terraform apply --auto-approve (no human review)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])pulumi\\s+destroy", "reason": "pulumi destroy", "severity": "high"},
+
+    {"regex": "aws\\s+s3\\s+rm\\s+.*--recursive", "reason": "aws s3 rm --recursive", "severity": "high"},
+    {"regex": "aws\\s+s3\\s+rb\\s+.*--force", "reason": "aws s3 rb --force (delete bucket)", "severity": "high"},
+    {"regex": "aws\\s+rds\\s+delete-db-instance", "reason": "aws rds delete-db-instance", "severity": "high"},
+    {"regex": "gcloud\\s+sql\\s+instances\\s+delete", "reason": "gcloud sql instances delete", "severity": "high"},
+    {"regex": "az\\s+sql\\s+(db|server)\\s+delete", "reason": "az sql delete", "severity": "high"},
+
+    {"regex": "(^|[\\s;|&])dd\\s+.*of=/dev/", "reason": "dd writing to /dev/ device (data destruction)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])mkfs\\.", "reason": "mkfs (format filesystem)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])fdisk\\s+", "reason": "fdisk (partition table edit)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])parted\\s+", "reason": "parted (partition table edit)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])shutdown\\s+", "reason": "shutdown", "severity": "high"},
+    {"regex": "(^|[\\s;|&])reboot\\s*(\\s|$)", "reason": "reboot", "severity": "medium"},
+    {"regex": "(^|[\\s;|&])kill\\s+-9\\s+-1", "reason": "kill -9 -1 (kill every process)", "severity": "high"},
+    {"regex": "(^|[\\s;|&])killall\\s+", "reason": "killall", "severity": "medium"},
+
+    {"regex": ":\\(\\)\\s*\\{\\s*:\\|", "reason": "fork bomb pattern", "severity": "high"},
+    {"regex": ">\\s*/dev/sd[a-z]", "reason": "redirect into /dev/sdX (disk overwrite)", "severity": "high"},
+    {"regex": "chmod\\s+(-R\\s+)?(777|666|000)\\s+/", "reason": "broad chmod on /", "severity": "high"},
+    {"regex": "chown\\s+(-R\\s+)?\\S+\\s+/(\\s|$)", "reason": "chown on /", "severity": "high"}
+  ]
+}

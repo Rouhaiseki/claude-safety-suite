@@ -1,0 +1,12 @@
+{
+  "name": "nonuke",
+  "description": "Stops Claude Code from running destructive commands without explicit confirmation: rm -rf, prisma migrate reset, DROP TABLE, git push --force, kubectl delete, terraform destroy, and ~60 more patterns. Every block writes an audit-log line.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Claude Safety Suite"
+  },
+  "homepage": "https://github.com/Rouhaiseki/claude-safety-suite",
+  "repository": "https://github.com/Rouhaiseki/claude-safety-suite",
+  "license": "MIT",
+  "keywords": ["security", "guardrail", "destructive", "data-loss", "audit", "rm-rf"]
+}

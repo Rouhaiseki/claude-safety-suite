@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "secret_file_patterns": [
+    {"regex": "(^|/)\\.env(\\.|$)", "reason": ".env file (likely contains secrets)"},
+    {"regex": "(^|/)\\.env$", "reason": ".env file (likely contains secrets)"},
+    {"regex": "(^|/)\\.envrc$", "reason": "direnv .envrc (often holds tokens)"},
+    {"regex": "(^|/)id_(rsa|ed25519|ecdsa|dsa)(\\.pub)?$", "reason": "SSH private key"},
+    {"regex": "\\.(pem|p12|pfx)$", "reason": "TLS certificate or private key"},
+    {"regex": "(^|/)\\.aws/credentials$", "reason": "AWS credentials file"},
+    {"regex": "(^|/)\\.aws/config$", "reason": "AWS config (may contain SSO tokens)"},
+    {"regex": "(^|/)\\.netrc$", "reason": ".netrc (HTTP basic-auth credentials)"},
+    {"regex": "(^|/)\\.npmrc$", "reason": ".npmrc (often holds npm registry tokens)"},
+    {"regex": "(^|/)\\.pypirc$", "reason": ".pypirc (PyPI tokens)"},
+    {"regex": "(^|/)\\.git-credentials$", "reason": "git credential store (plaintext passwords)"},
+    {"regex": "(^|/)\\.docker/config\\.json$", "reason": "Docker registry credentials"},
+    {"regex": "(^|/)\\.kube/config$", "reason": "Kubernetes credentials"},
+    {"regex": "(^|/)credentials\\.json$", "reason": "credentials.json"},
+    {"regex": "(^|/)service-account[^/]*\\.json$", "reason": "GCP service-account key"},
+    {"regex": "(^|/)secrets?\\.(json|yaml|yml|toml)$", "reason": "secrets file"},
+    {"regex": "(^|/)wallet\\.(dat|json)$", "reason": "crypto wallet file"},
+    {"regex": "\\.kdbx$", "reason": "KeePass database"}
+  ],
+  "secret_file_allowlist": [
+    {"regex": "\\.env\\.example$"},
+    {"regex": "\\.env\\.sample$"},
+    {"regex": "\\.env\\.template$"},
+    {"regex": "\\.env\\.dist$"},
+    {"regex": "\\.env\\.test$"}
+  ],
+  "dangerous_bash_patterns": [
+    {"regex": "(^|\\s|;|\\|)printenv(\\s|$)", "reason": "`printenv` dumps every env var (including secrets)"},
+    {"regex": "(^|\\s|;|\\|)env(\\s*$|\\s*[|;&])", "reason": "`env` with no args dumps every env var"},
+    {"regex": "(^|\\s|;|\\|)set(\\s*$|\\s*[|;&])", "reason": "bash `set` (no args) dumps every variable"},
+    {"regex": "docker(-|\\s)compose\\s+config", "reason": "`docker compose config` resolves all .env values into stdout"},
+    {"regex": "(cat|less|more|head|tail|bat|nl|grep|rg|ag|xxd|hexdump|od)\\s+[^|;&\\s]*\\.env(\\s|$|[|;&])", "reason": "reads a .env file"},
+    {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*\\.(pem|p12|pfx)(\\s|$|[|;&])", "reason": "reads a private-key file"},
+    {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*id_(rsa|ed25519|ecdsa|dsa)(\\s|$|[|;&])", "reason": "reads an SSH private key"},
+    {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*\\.aws/credentials(\\s|$|[|;&])", "reason": "reads AWS credentials"},
+    {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*\\.netrc(\\s|$|[|;&])", "reason": "reads .netrc"},
+    {"regex": "(cat|less|more|head|tail|bat)\\s+[^|;&\\s]*\\.npmrc(\\s|$|[|;&])", "reason": "reads .npmrc"},
+    {"regex": "echo\\s+\\$\\{?[A-Z][A-Z0-9_]*(TOKEN|KEY|SECRET|PASSWORD|PASS|PWD|API_KEY)\\}?", "reason": "echoes a likely-secret env var"},
+    {"regex": "git\\s+config\\s+(--global\\s+)?--get\\s+credential", "reason": "reads git credential helper"}
+  ],
+  "secret_env_var_patterns": [
+    "^[A-Z][A-Z0-9_]*_TOKEN$",
+    "^[A-Z][A-Z0-9_]*_SECRET$",
+    "^[A-Z][A-Z0-9_]*_KEY$",
+    "^[A-Z][A-Z0-9_]*_API_KEY$",
+    "^[A-Z][A-Z0-9_]*_PASSWORD$",
+    "^STRIPE_",
+    "^GITHUB_TOKEN$",
+    "^GH_TOKEN$",
+    "^AWS_SECRET_ACCESS_KEY$",
+    "^ANTHROPIC_API_KEY$",
+    "^OPENAI_API_KEY$"
+  ]
+}
