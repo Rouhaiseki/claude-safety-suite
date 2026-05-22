@@ -27,6 +27,118 @@ git clone https://github.com/Rouhaiseki/claude-safety-suite.git
 claude --plugin-dir ./claude-safety-suite/envshield --plugin-dir ./claude-safety-suite/nonuke
 ```
 
+## Examples
+
+Real input → output shown below. The "message Claude sees" is the literal
+text returned to Claude — Claude reads this and (correctly) asks you for
+confirmation before retrying.
+
+### EnvShield in action
+
+**❶ Claude tries to read `.env`**
+
+```
+Tool:   Read { file_path: "/Users/me/app/.env" }
+Result: ⛔ BLOCKED
+
+Message Claude sees:
+  [EnvShield] Blocked Read on '/Users/me/app/.env' — .env file (likely contains secrets).
+  If you intend to access this on purpose, ask the user to confirm in plain
+  text before retrying. To allow once for a Bash call, append `# envshield:allow`
+  to the command. To disable EnvShield for the whole session, run with
+  `ENVSHIELD_DISABLE=1`.
+```
+
+**❷ Claude tries to dump env vars via bash**
+
+```
+Tool:   Bash { command: "cat .env | grep STRIPE" }
+Result: ⛔ BLOCKED — reads a .env file.
+
+Tool:   Bash { command: "docker compose config" }
+Result: ⛔ BLOCKED — `docker compose config` resolves all .env values into stdout.
+
+Tool:   Bash { command: "printenv" }
+Result: ⛔ BLOCKED — `printenv` dumps every env var (including secrets).
+```
+
+**❸ Templates and overrides are allowed**
+
+```
+Tool:   Read { file_path: "/Users/me/app/.env.example" }
+Result: ✅ ALLOWED — .env.example is on the template allowlist.
+
+Tool:   Bash { command: "cat .env # envshield:allow" }
+Result: ✅ ALLOWED — per-call user override.
+```
+
+**❹ Audit log line**
+
+```jsonl
+{"ts":"2026-05-22T19:28:18+0800","session_id":"abc123","cwd":"/Users/me/app","tool_name":"Bash","target":"docker compose config","matched_pattern":"docker(-|\\s)compose\\s+config","decision":"deny","reason":"Blocked bash command — `docker compose config` resolves all .env values into stdout."}
+```
+
+### NoNuke in action
+
+**❶ Reproduces issue #34729 (the Prisma data-loss incident)**
+
+```
+Tool:   Bash { command: "npx prisma migrate reset --force" }
+Result: ⛔ BLOCKED
+
+Message Claude sees:
+  [NoNuke] Refusing destructive command — prisma migrate reset (drops dev DB).
+  Ask the user to confirm in plain text before retrying. If the user explicitly
+  approves, append ` # nonuke:approve` to the command (a comment shell will
+  ignore). To disable NoNuke for the whole session, run with `NONUKE_DISABLE=1`.
+```
+
+**❷ Catches the obvious foot-guns**
+
+```
+Tool:   Bash { command: "rm -rf node_modules/../old-app" }
+Result: ⛔ BLOCKED — rm -rf / rm -fr (recursive force delete).
+
+Tool:   Bash { command: "git push origin main --force" }
+Result: ⛔ BLOCKED — git push --force (overwrites remote history; --force-with-lease is safer).
+
+Tool:   Bash { command: "terraform destroy --auto-approve" }
+Result: ⛔ BLOCKED — terraform destroy.
+
+Tool:   Bash { command: "kubectl delete namespace prod" }
+Result: ⛔ BLOCKED — kubectl delete on namespace/pvc/pv/crd/all.
+```
+
+**❸ Knows when to step aside**
+
+```
+Tool:   Bash { command: "git push origin feature --force-with-lease" }
+Result: ✅ ALLOWED — lease-based force push is safer; not blocked.
+
+Tool:   Bash { command: "ls -la" }
+Result: ✅ ALLOWED — not destructive.
+
+Tool:   Bash { command: "rm -rf /tmp/scratch # nonuke:approve" }
+Result: ✅ ALLOWED — per-call user override.
+```
+
+**❹ Audit log line**
+
+```jsonl
+{"ts":"2026-05-22T19:28:19+0800","session_id":"abc123","cwd":"/Users/me/app","command":"npx prisma migrate reset --force","matched_pattern":"(^|[\\s;|&])prisma\\s+migrate\\s+reset","reason":"prisma migrate reset (drops dev DB)","severity":"high","decision":"deny"}
+```
+
+### What this means in practice
+
+When EnvShield/NoNuke blocks a tool call, Claude doesn't crash or silently fail.
+It reads the deny reason as a normal tool-result message and almost always does
+the right thing: it stops, summarizes what it was about to do, and asks you to
+confirm in plain English. You can approve in two ways — by appending the
+per-call override comment, or by replying in plain text ("yes, go ahead with
+the migration reset on the dev database").
+
+---
+
 ## EnvShield — quick reference
 
 **What it blocks**
