@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Plugin: Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-orange)](https://code.claude.com)
 
+> 📝 **Featured on dev.to:** [I built two Claude Code hooks to stop it from leaking my .env files and wiping my dev DB](https://dev.to/rouhaiseki/i-built-two-claude-code-hooks-to-stop-it-from-leaking-my-env-files-and-wiping-my-dev-db-3a29)
+
 Two PreToolUse guardrails for [Claude Code](https://code.claude.com):
 
 - **EnvShield** — blocks reads of `.env`, SSH keys, AWS credentials, `.npmrc`, and ~15 other secret files. Also blocks bash workarounds (`printenv`, `docker compose config`, `cat .env`, …) that would dump secrets via stdout.
